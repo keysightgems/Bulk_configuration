@@ -37,6 +37,14 @@ excel=API_Sheet()
 excelName=excel.create_excel(parameter=dict(list(value)))
 # Example:
 	devicegroup = {'Topology':['SI-FANOUT-SW11'], 'Device Group':['SI-FANOUT-SW11_Vlan2000'], 'Multiplier':[1], 'Vlan Header':[2000]}
+	
+	For Example: If 'Vlan Header' is multivalue please send the value like below.
+	
+		For increment: 'Vlan Header':['increment;2001;1']
+	
+		For singleValue: 'Vlan Header':[2000]
+		
+		For valueList: 'Vlan Header':['valuelist;2001;2010;2011;2012;2020;2021;2022']
 
 	ipv4_ethernet = {'Device Group':['SI-FANOUT-SW11_Vlan2000']}
 
