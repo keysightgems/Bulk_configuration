@@ -180,6 +180,46 @@ class BulkConfig():
                                                     }
                                                     self.config.append({key: value for key, value in resolvegwinfo.items()})
 
+                                if 'IPv4_Loopback_BGP' in status_dict:
+                                    if status_dict['IPv4_Loopback_BGP'] == True:
+                                        loopback = dict()
+                                        loopbackAttributes = {'Loopback Adress':'address', 'Prefix':'prefix', 'Peer IP':'dutIp', 'Type':'type', 'AS':'localAs2Bytes',\
+                                                              'Hold Timer':'holdTimer', 'Keepalive':'keepaliveTimer', 'Authentication':'authentication', 'Key':'md5Key'}
+                                        for device_group_name in Worksheet_Dict['IPv4_Loopback_BGP']:
+                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            if 'Device Group' in device_group_name:
+                                                if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                    loopback.update({"xpath": (devicegroupinfo['xpath'] + '/ipv4Loopback[1]')})
+                                                    self.config.append({key: value for key, value in loopback.items()})
+                                                    device_group_name.pop('Device Group')
+                                                    for loopbackKey in device_group_name:
+                                                        if loopbackKey == 'Loopback Adress' or loopbackKey == 'Prefix':
+                                                            self.config_multivalueObj(device_group_name[loopbackKey], loopback['xpath'], loopbackAttributes[loopbackKey])
+                                                        else:
+                                                            self.config_multivalueObj(device_group_name[loopbackKey],
+                                                                                      loopback['xpath']+'/bgpIpv4Peer[1]',
+                                                                                      loopbackAttributes[loopbackKey])
+                                    bgpCapAttributes = {'IPV4 Unicast': 'capabilityIpV4Unicast',
+                                                        'IPv4 Multicast': 'capabilityIpV4Multicast',
+                                                        'IPv4 MPLS VPN': 'capabilityIpV4MplsVpn', \
+                                                        'VPLS': 'capabilityVpls',
+                                                        'Route Refresh': 'capabilityRouteRefresh',
+                                                        'Route Constraint': 'capabilityRouteConstraint', \
+                                                        'IPV6 Unicast': 'capabilityIpV6Unicast',
+                                                        'IPv6 Multicast': 'capabilityIpV6Multicast',
+                                                        'IPv6 MPLS VPN': 'capabilityIpV6MplsVpn'}
+                                    if 'BGP_Capabilities' in status_dict:
+                                        if status_dict['BGP_Capabilities'] == True:
+                                            for device_group_name in Worksheet_Dict['BGP_Capabilities']:
+                                                devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                if 'Device Group' in device_group_name:
+                                                    if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                        bgpv4.update({"xpath": (devicegroupinfo['xpath'] + '/ipv4Loopback[1]/bgpIpv4Peer[1]')})
+                                                        self.config.append({key: value for key, value in bgpv4.items()})
+                                                        device_group_name.pop('Device Group')
+                                                        for bgpKey in device_group_name:
+                                                            self.config_multivalueObj(device_group_name[bgpKey], bgpv4['xpath'], bgpCapAttributes[bgpKey])
+
                                 # Verify BGP data presence and add stack
                                 if 'IPv4_BGP' in status_dict:
                                     if status_dict['IPv4_BGP'] == True:
