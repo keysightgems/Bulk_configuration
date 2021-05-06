@@ -55,3 +55,10 @@ tgnObj.bulk_config(excelName)
 
 tgnObj.create_trafficitems(excelName)
 
+# Supported Server Versions
+Linux IxNetwork API Server
+
+Windows IxNetwork GUI
+
+Windows IxNetwork Connection Manager
+
