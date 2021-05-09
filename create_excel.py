@@ -41,68 +41,68 @@ class API_Sheet():
         else:
             base_data = pd.DataFrame(self.Base)
         if self.Physical == 'default':
-            physical_data = pd.DataFrame({'Chassis IP':['10.39.70.159'],'Linecard Number':[1], 'Port Number':[1], 'Port Name':['IxN-1'], 'Topology Name':['SI-FANOUT-SW11']})
+            physical_data = pd.DataFrame({'Chassis IP':['10.39.70.159', '10.39.70.159'],'Linecard Number':[1, 1], 'Port Number':[1, 2], 'Port Name':['Ethernet - 001', 'Ethernet - 002'], 'Topology Name':['Topology 1', 'Topology 2']})
         else:
             physical_data = pd.DataFrame(self.Physical)
         if self.Devicegroup == 'default':
-            devicegroup_data = pd.DataFrame({'Topology':['SI-FANOUT-SW11'], 'Device Group':['SI-FANOUT-SW11_Vlan2000'], 'Multiplier':[1], \
-                                             'Vlan Header':[2000]})
+            devicegroup_data = pd.DataFrame({'Topology':['Topology 1', 'Topology 2'], 'Device Group':['Device Group 1', 'Device Group 2'], 'Multiplier':[1, 1], \
+                                             'Vlan Header':[1, 1]})
         else:
             devicegroup_data = pd.DataFrame(self.Devicegroup)
         if self.IPv4_Ethernet == 'default':
-            ipv4_data = pd.DataFrame({'Device Group':['SI-FANOUT-SW11_Vlan2000']})
+            ipv4_data = pd.DataFrame({'Device Group':['Device Group 1', 'Device Group 2']})
         else:
             ipv4_data = pd.DataFrame(self.IPv4_Ethernet)
         if self.IPv6_Ethernet == 'default':
-            ipv6_data = pd.DataFrame({'Device Group':['SI-FANOUT-SW11_Vlan2000']})
+            ipv6_data = pd.DataFrame({'Device Group':['Device Group 1', 'Device Group 2']})
         else:
             ipv6_data = pd.DataFrame(self.IPv6_Ethernet)
         if self.IPv4_BGP == 'default':
-            bgpv4_data = pd.DataFrame({'Device Group':['SI-FANOUT-SW11_Vlan2000']})
+            bgpv4_data = pd.DataFrame({'Device Group':['Device Group 1', 'Device Group 2']})
         else:
             bgpv4_data = pd.DataFrame(self.IPv4_BGP)
         if self.IPv6_BGP == 'default':
-            bgpv6_data = pd.DataFrame({'Device Group':['SI-FANOUT-SW11_Vlan2000']})
+            bgpv6_data = pd.DataFrame({'Device Group':['Device Group 1', 'Device Group 2']})
         else:
             bgpv6_data = pd.DataFrame(self.IPv6_BGP)
         if self.BGP_Capabilities == 'default':
-            bgpcap_data = pd.DataFrame({'Device Group':['SI-FANOUT-SW11_Vlan2000']})
+            bgpcap_data = pd.DataFrame({'Device Group':['Device Group 1', 'Device Group 2']})
         else:
             bgpcap_data = pd.DataFrame(self.BGP_Capabilities)
         if self.IPv4_Loopback == 'default':
-            loopback_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            loopback_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2']})
         else:
             loopback_data = pd.DataFrame(self.IPv4_Loopback)
         if self.IPv4_OSPF == 'default':
-            ospfv2_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            ospfv2_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2']})
         else:
             ospfv2_data = pd.DataFrame(self.IPv4_OSPF)
         if self.IPv6_OSPF == 'default':
-            ospfv3_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            ospfv3_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2']})
         else:
             ospfv3_data = pd.DataFrame(self.IPv6_OSPF)
         if self.ISIS == 'default':
-            isis_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            isis_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2']})
         else:
             isis_data = pd.DataFrame(self.ISIS)
         if self.Network_Group == 'default':
-            network_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            network_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2'], 'Name': ['Network Group 1', 'Network Group 2'], 'IP Version': ['ipv4', 'ipv4'], 'Multiplier':[1, 1], 'Protocol':['ospfv2', 'ospfv2']})
         else:
             network_data = pd.DataFrame(self.Network_Group)
         if self.IGMP_Host == 'default':
-            host_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            host_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2']})
         else:
             host_data = pd.DataFrame(self.IGMP_Host)
         if self.IGMP_Querier == 'default':
-            querier_data = pd.DataFrame({'Device Group': ['SI-FANOUT-SW11_Vlan2000']})
+            querier_data = pd.DataFrame({'Device Group': ['Device Group 1', 'Device Group 2']})
         else:
             querier_data = pd.DataFrame(self.IGMP_Querier)
         if self.Traffic == 'default':
-            traffic_data = pd.DataFrame({'Traffic name': ['SI-FANOUT-SW11_Vlan2000_IPv4<->Vlan2000']})
+            traffic_data = pd.DataFrame({'Traffic name': ['Device Group 1'], 'Type':['ipv4'], 'bi-directional': ['yes'], 'Source': ['Device Group 1'], 'Destination': ['Device Group 2']})
         else:
             traffic_data = pd.DataFrame(self.Traffic)
         if self.packet_editor == 'default':
-            packet_data = pd.DataFrame({'Traffic name': ['SI-FANOUT-SW11_Vlan2000_IPv4<->Vlan2000']})
+            packet_data = pd.DataFrame({'Traffic name': ['Device Group 1'], 'Type':'TCP;UDP'})
         else:
             packet_data = pd.DataFrame(self.packet_editor)
 
@@ -116,7 +116,7 @@ class API_Sheet():
         bgpv4_data.to_excel(writer, sheet_name='IPv4_BGP', index=False)
         bgpv6_data.to_excel(writer, sheet_name='IPv6_BGP', index=False)
         bgpcap_data.to_excel(writer, sheet_name='BGP_Capabilities', index=False)
-        loopback_data.to_excel(writer, sheet_name='IPv4_Loopback', index=False)
+        loopback_data.to_excel(writer, sheet_name='IPv4_Loopback_BGP', index=False)
         ospfv2_data.to_excel(writer, sheet_name='IPv4_OSPF', index=False)
         ospfv3_data.to_excel(writer, sheet_name='IPv6_OSPF', index=False)
         isis_data.to_excel(writer, sheet_name='ISIS', index=False)
