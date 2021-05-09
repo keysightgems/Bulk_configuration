@@ -127,7 +127,7 @@ class BulkConfig():
                                 if 'IPv4_Ethernet' in status_dict:
                                     if status_dict['IPv4_Ethernet'] == True:
                                         for device_group_name in Worksheet_Dict['IPv4_Ethernet']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                 ipv4info = {'xpath': (ethernetinfo['xpath'] + '/ipv4[1]'),
                                                             'name': ('ipv4_ ' + str(devicegroupIndex))}
@@ -157,7 +157,7 @@ class BulkConfig():
                                     if status_dict['IPv6_Ethernet'] == True:
                                         ipv6 = dict()
                                         for device_group_name in Worksheet_Dict['IPv6_Ethernet']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                 ipv6.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]')})
                                                 self.config.append({key: value for key, value in ipv6.items()})
@@ -186,7 +186,7 @@ class BulkConfig():
                                         loopbackAttributes = {'Loopback Adress':'address', 'Prefix':'prefix', 'Peer IP':'dutIp', 'Type':'type', 'AS':'localAs2Bytes',\
                                                               'Hold Timer':'holdTimer', 'Keepalive':'keepaliveTimer', 'Authentication':'authentication', 'Key':'md5Key'}
                                         for device_group_name in Worksheet_Dict['IPv4_Loopback_BGP']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     loopback.update({"xpath": (devicegroupinfo['xpath'] + '/ipv4Loopback[1]')})
@@ -211,14 +211,14 @@ class BulkConfig():
                                     if 'BGP_Capabilities' in status_dict:
                                         if status_dict['BGP_Capabilities'] == True:
                                             for device_group_name in Worksheet_Dict['BGP_Capabilities']:
-                                                devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                                 if 'Device Group' in device_group_name:
                                                     if device_group_name['Device Group'] == devicegroupinfo['name']:
-                                                        bgpv4.update({"xpath": (devicegroupinfo['xpath'] + '/ipv4Loopback[1]/bgpIpv4Peer[1]')})
-                                                        self.config.append({key: value for key, value in bgpv4.items()})
+                                                        loopback.update({"xpath": (devicegroupinfo['xpath'] + '/ipv4Loopback[1]/bgpIpv4Peer[1]')})
+                                                        self.config.append({key: value for key, value in loopback.items()})
                                                         device_group_name.pop('Device Group')
                                                         for bgpKey in device_group_name:
-                                                            self.config_multivalueObj(device_group_name[bgpKey], bgpv4['xpath'], bgpCapAttributes[bgpKey])
+                                                            self.config_multivalueObj(device_group_name[bgpKey], loopback['xpath'], bgpCapAttributes[bgpKey])
 
                                 # Verify BGP data presence and add stack
                                 if 'IPv4_BGP' in status_dict:
@@ -228,7 +228,7 @@ class BulkConfig():
                                                            'As Mode':'asSetMode', 'Enable BFD':'enableBfdRegistration', 'BFD Mode':'modeOfBfdOperations', 'Hold Timer':'holdTimer', 'Config Keepalive':'configureKeepaliveTimer', 'Keepalive':'keepaliveTimer', \
                                                            'Update Interval':'updateInterval', 'TTL':'ttl', 'Authentication':'authentication', 'Key':'md5Key'}
                                         for device_group_name in Worksheet_Dict['IPv4_BGP']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     bgpv4.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/bgpIpv4Peer[1]')})
@@ -242,7 +242,7 @@ class BulkConfig():
                                         if 'BGP_Capabilities' in status_dict:
                                             if status_dict['BGP_Capabilities'] == True:
                                                 for device_group_name in Worksheet_Dict['BGP_Capabilities']:
-                                                    devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                    # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                                     if 'Device Group' in device_group_name:
                                                         if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                             bgpv4.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/bgpIpv4Peer[1]')})
@@ -258,7 +258,7 @@ class BulkConfig():
                                                            'Hold Timer':'holdTimer', 'Config Keepalive':'configureKeepaliveTimer', 'Keepalive':'keepaliveTimer', 'Authentication':'authentication',\
                                                            'Key':'md5Key', 'As Mode':'asSetMode', 'Enable BFD':'enableBfdRegistration', 'BFD Mode':'modeOfBfdOperations'}
                                         for device_group_name in Worksheet_Dict['IPv6_BGP']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     bgpv6.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]' + '/bgpIpv6Peer[1]')})
@@ -270,7 +270,7 @@ class BulkConfig():
                                         if 'BGP_Capabilities' in status_dict:
                                             if status_dict['BGP_Capabilities'] == True:
                                                 for device_group_name in Worksheet_Dict['BGP_Capabilities']:
-                                                    devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                    # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                                     if 'Device Group' in device_group_name:
                                                         if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                             bgpv6.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/bgpIpv4Peer[1]')})
@@ -286,7 +286,7 @@ class BulkConfig():
                                                             'Dead Timers':'deadInterval', 'Routing Metric':'metric', 'Validate Receive MTU':'validateRxMtu', 'MTU':'maxMtu',\
                                                             'Authentication':'authentication', 'Key Id':'md5KeyId', 'Key':'md5Key'}
                                         for device_group_name in Worksheet_Dict['IPv4_OSPF']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     ospfv4.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/ospfv2[1]')})
@@ -303,7 +303,7 @@ class BulkConfig():
                                                             'Dead Timers': 'deadInterval', 'Link Metric': 'linkMetric', 'Authentication Algo': 'authAlgo',\
                                                             'Authentication': 'authentication', 'SA Id': 'saId', 'Key': 'md5Key'}
                                         for device_group_name in Worksheet_Dict['IPv6_OSPF']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     ospfv6.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]' + '/ospfv3[1]')})
@@ -321,7 +321,7 @@ class BulkConfig():
                                                             'Ipv6 Metric': 'ipv6MTMetric', 'Network Type': 'networkType', 'Level Type': 'levelType', 'Level 1 Hello Interval':'level1HelloInterval', 'Level 1 Dead Interval':'level1DeadInterval',\
                                                             'Max Sl Msd':'maxSlMsd', 'Level 2 Hello Interval':'level2HelloInterval', 'Level 2 Dead Interval':'level2DeadInterval', 'Authentication Type':'authType', 'Key':'circuitTranmitPasswordOrMD5Key'}
                                         for device_group_name in Worksheet_Dict['ISIS']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     isis.update({"xpath": (ethernetinfo['xpath'] + '/isisL3[1]')})
@@ -338,7 +338,7 @@ class BulkConfig():
                                         igmpHostSourceAttributes = {'Start Source Address': 'startUcastAddr', 'Source Address Incr': 'ucastAddrIncr',
                                                                    'Source Address Count': 'ucastSrcAddrCnt'}
                                         for device_group_name in Worksheet_Dict['IGMP_Host']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     igmpHost.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/igmpHost[1]')})
@@ -378,7 +378,7 @@ class BulkConfig():
                                         igmpQuerierAttributes = {'Version':'versionType', 'Query Count':'startupQueryCount', 'Query Interval':'generalQueryInterval', 'Router Alert':'routerAlert', 'Robustness':'robustnessVariable',\
                                                                  'Query Response Interval':'generalQueryResponseInterval','Transmission Count':'specificQueryTransmissionCount'}
                                         for device_group_name in Worksheet_Dict['IGMP_Querier']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     igmpQuerier.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/igmpQuerier[1]')})
@@ -392,7 +392,7 @@ class BulkConfig():
                                     if status_dict['Network_Group'] == True:
                                         networkGroup = dict()
                                         for device_group_name in Worksheet_Dict['Network_Group']:
-                                            devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                            # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
                                             if 'Device Group' in device_group_name:
                                                 if device_group_name['Device Group'] == devicegroupinfo['name']:
                                                     networkGroup.update({"xpath": (devicegroupinfo['xpath'] + '/networkGroup[1]')})
@@ -632,37 +632,48 @@ class BulkConfig():
                 # Need to add config element stack ipv4, ipv6,tcp,udp
                 configElementStack = []
                 if status_dict['packet_editor'] == True:
-                    layer4Index = '4'
+                    layer4Index = 4
                     for packetInfo in Worksheet_Dict['packet_editor']:
                         if packetInfo['Traffic name'] == traffic_items['name']:
-                            if packetInfo['Type'].lower() == 'udp':
-                                udpXpathDict = dict()
-                                udpSourcePortDict = dict()
-                                udpDestinationPortDict = dict()
-                                udpFields = []
-                                if packetInfo['Source Port'] != '' and packetInfo['Destination Port'] != '':
-                                    udpPortsAuto = 'false'
+                            if 'Type' in packetInfo:
+                                if ';' in packetInfo['Type']:
+                                    prtotocolTypeList = [packetType.lower() for packetType in packetInfo['Type'].split(';')]
                                 else:
-                                    udpPortsAuto = 'true'
-                                udpSourcePortDict.update({"xpath": traffic_items[
-                                                                       'xpath'] + "/configElement[1]" + "/stack[@alias = 'udp-" + layer4Index + "']/field[@alias = 'udp.header.srcPort-1']",
-                                                          "singleValue": packetInfo['Source Port'],
-                                                          "fieldValue": 'Default',
-                                                          "stepValue": "1",
-                                                          "valueType": "increment", "auto": udpPortsAuto,
-                                                          "startValue": packetInfo['Source Port'],
-                                                          "countValue": "1"})
-                                udpFields.append({key: value for key, value in udpSourcePortDict.items()})
-                                udpDestinationPortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = 'udp-" + layer4Index + "']/field[@alias = 'udp.header.dstPort-2']",
-                                                               "singleValue": packetInfo['Destination Port'],
-                                                               "fieldValue": 'Default',
-                                                               "stepValue": "1", "auto": udpPortsAuto,
-                                                               "valueType": "increment",
-                                                               "startValue": packetInfo['Destination Port'], "countValue": "1"})
-                                udpFields.append({key: value for key, value in udpDestinationPortDict.items()})
-                                udpXpathDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = 'udp-" + layer4Index + "']",
-                                                     "field": udpFields})
-                                configElementStack.append({key: value for key, value in udpXpathDict.items()})
+                                    prtotocolTypeList = [packetInfo['Type'].lower()]
+                                for protocolType in prtotocolTypeList:
+
+                                # if packetInfo['Type'].lower() == 'udp':
+                                    udpXpathDict = dict()
+                                    udpSourcePortDict = dict()
+                                    udpDestinationPortDict = dict()
+                                    udpFields = []
+                                    if 'Source Port' in packetInfo and 'Destination Port' in packetInfo:
+                                        if packetInfo['Source Port'] != '' and packetInfo['Destination Port'] != '':
+                                            udpPortsAuto = 'true'
+                                        sourcePort = packetInfo['Source Port']
+                                        destinationPort = packetInfo['Destination Port']
+                                    else:
+                                        udpPortsAuto = 'false'
+                                        sourcePort = 63
+                                        destinationPort = 123
+                                    udpSourcePortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = " + protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]/field[@alias = " + protocolType +".header.srcPort-1]",
+                                                              "singleValue": sourcePort,
+                                                              "fieldValue": 'Default',
+                                                              "stepValue": "1",
+                                                              "valueType": "increment", "auto": udpPortsAuto,
+                                                              "startValue": sourcePort,
+                                                              "countValue": "1"})
+                                    udpFields.append({key: value for key, value in udpSourcePortDict.items()})
+                                    udpDestinationPortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = "+ protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]/field[@alias = "+ protocolType +".header.dstPort-2]",
+                                                                   "singleValue": destinationPort,
+                                                                   "fieldValue": 'Default',
+                                                                   "stepValue": "1", "auto": udpPortsAuto,
+                                                                   "valueType": "increment",
+                                                                   "startValue": destinationPort, "countValue": "1"})
+                                    udpFields.append({key: value for key, value in udpDestinationPortDict.items()})
+                                    udpXpathDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = "+ protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]",
+                                                         "field": udpFields})
+                                    configElementStack.append({key: value for key, value in udpXpathDict.items()})
 
                 configElementDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]",
                                           "crc": "goodCrc",
