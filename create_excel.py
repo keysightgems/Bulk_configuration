@@ -102,7 +102,7 @@ class API_Sheet():
         else:
             traffic_data = pd.DataFrame(self.Traffic)
         if self.packet_editor == 'default':
-            packet_data = pd.DataFrame({'Traffic name': ['Device Group 1'], 'Type':'TCP;UDP'})
+            packet_data = pd.DataFrame({'Traffic name': ['Device Group 1'], 'Type':'TCP'})
         else:
             packet_data = pd.DataFrame(self.packet_editor)
 

@@ -538,65 +538,74 @@ class BulkConfig():
                 traffic.append({key: value for key, value in traffic_items.items()})
                 if traffic_item['Type'].lower() == "ipv4":
                     if 'Source' not in traffic_item or traffic_item['Source'] == '':
-                        raise IxiaConfigException("Please send source parameter value to create Raw Traffic")
+                        pass
                     else:
                         if ';' in traffic_item['Source']:
                             sourcexpathList = traffic_item['Source'].split(';')
                         else:
                             sourcexpathList = [traffic_item['Source']]
                         for sourcePath in sourcexpathList:
-                            sourcexpath = self.ixnetwork.Topology.find().DeviceGroup.find(
-                                Name='^' + sourcePath + '$').Ethernet.find().Ipv4.find().href
-                            sourcexpath = sourcexpath.replace(replacementString, '')
-                            if 'ipv4/2' in sourcexpath:
-                                sourcexpath = sourcexpath.replace('ipv4/2','ipv4/1')
-                            sourceXpath.append(re.sub(r'/(\d+)', r'[\1]', sourcexpath))
+                            try:
+                                sourcexpath = self.ixnetwork.Topology.find().DeviceGroup.find(
+                                    Name='^' + sourcePath + '$').Ethernet.find().Ipv4.find().href
+                                sourcexpath = sourcexpath.replace(replacementString, '')
+                                if 'ipv4/2' in sourcexpath:
+                                    sourcexpath = sourcexpath.replace('ipv4/2','ipv4/1')
+                                sourceXpath.append(re.sub(r'/(\d+)', r'[\1]', sourcexpath))
+                            except:
+                                pass
                     if 'Destination' not in traffic_item or traffic_item['Destination'] == '':
-                        raise IxiaConfigException("Please send destination parameter value to create Raw Traffic")
+                        pass
                     else:
                         if ';' in traffic_item['Destination']:
                             destxpathList = traffic_item['Destination'].split(';')
                         else:
                             destxpathList = [traffic_item['Destination']]
                         for destPath in destxpathList:
-                            # import pdb;pdb.set_trace()
-                            destxpath = self.ixnetwork.Topology.find().DeviceGroup.find(
-                                Name='^' + destPath + '$').Ethernet.find().Ipv4.find().href
-                            destxpath = destxpath.replace(replacementString, '')
-                            if 'ipv4/2' in destxpath:
-                                destxpath = destxpath.replace('ipv4/2','ipv4/1')
-                            destinationXpath.append(re.sub(r'/(\d+)', r'[\1]', destxpath))
-
+                            try:
+                                destxpath = self.ixnetwork.Topology.find().DeviceGroup.find(
+                                    Name='^' + destPath + '$').Ethernet.find().Ipv4.find().href
+                                destxpath = destxpath.replace(replacementString, '')
+                                if 'ipv4/2' in destxpath:
+                                    destxpath = destxpath.replace('ipv4/2','ipv4/1')
+                                destinationXpath.append(re.sub(r'/(\d+)', r'[\1]', destxpath))
+                            except:
+                                pass
                 if traffic_item['Type'].lower() == "ipv6":
                     if 'Source' not in traffic_item or traffic_item['Source'] == '':
-                        raise IxiaConfigException("Please send source parameter value to create Raw Traffic")
+                        pass
                     else:
                         if ';' in traffic_item['Source']:
                             sourcexpathList = traffic_item['Source'].split(';')
                         else:
                             sourcexpathList = [traffic_item['Source']]
                         for sourcePath in sourcexpathList:
-                            sourcexpath = self.ixnetwork.Topology.find().DeviceGroup.find(
-                                Name='^' + sourcePath + '$').Ethernet.find().Ipv6.find().href
-                            sourcexpath = sourcexpath.replace(replacementString, '')
-                            if 'ipv6/2' in sourcexpath:
-                                sourcexpath = sourcexpath.replace('ipv6/2','ipv6/1')
-                            sourceXpath.append(re.sub(r'/(\d+)', r'[\1]', sourcexpath))
+                            try:
+                                sourcexpath = self.ixnetwork.Topology.find().DeviceGroup.find(
+                                    Name='^' + sourcePath + '$').Ethernet.find().Ipv6.find().href
+                                sourcexpath = sourcexpath.replace(replacementString, '')
+                                if 'ipv6/2' in sourcexpath:
+                                    sourcexpath = sourcexpath.replace('ipv6/2','ipv6/1')
+                                sourceXpath.append(re.sub(r'/(\d+)', r'[\1]', sourcexpath))
+                            except:
+                                pass
                     if 'Destination' not in traffic_item or traffic_item['Destination'] == '':
-                        raise IxiaConfigException("Please send destination parameter value to create Raw Traffic")
+                        pass
                     else:
                         if ';' in traffic_item['Destination']:
                             destxpathList = traffic_item['Destination'].split(';')
                         else:
                             destxpathList = [traffic_item['Destination']]
                         for destPath in destxpathList:
-                            destxpath = self.ixnetwork.Topology.find().DeviceGroup.find(
-                                Name='^' + destPath + '$').Ethernet.find().Ipv6.find().href
-                            destxpath = destxpath.replace(replacementString, '')
-                            if 'ipv6/2' in destxpath:
-                                destxpath = destxpath.replace('ipv6/2','ipv6/1')
-                            destinationXpath.append(re.sub(r'/(\d+)', r'[\1]', destxpath))
-
+                            try:
+                                destxpath = self.ixnetwork.Topology.find().DeviceGroup.find(
+                                    Name='^' + destPath + '$').Ethernet.find().Ipv6.find().href
+                                destxpath = destxpath.replace(replacementString, '')
+                                if 'ipv6/2' in destxpath:
+                                    destxpath = destxpath.replace('ipv6/2','ipv6/1')
+                                destinationXpath.append(re.sub(r'/(\d+)', r'[\1]', destxpath))
+                            except:
+                                pass
                 if destinationXpath != [] and sourceXpath != []:
                     endpointSetDict.update(
                         {"xpath": (traffic_items['xpath'] + "/endpointSet[" + str(endpointIndex) + "]"),
@@ -606,11 +615,6 @@ class BulkConfig():
                          "destinations": destinationXpath
                          })
                     traffic.append({key: value for key, value in endpointSetDict.items()})
-
-                else:
-                    raise IxiaConfigException(
-                        " Traffic item {} Endpoints info is not correct unable to add endpoints".format(
-                            traffic_items['name']))
 
                 if 'framesize' in traffic_item and traffic_item['framesize'] != '':
                     frameSizeDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]/frameSize",
