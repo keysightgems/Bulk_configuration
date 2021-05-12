@@ -347,6 +347,111 @@ class BulkConfig():
                                                                 for isisKey in device_group_name:
                                                                     self.config_multivalueObj(device_group_name[isisKey],
                                                                                               isis['xpath'], isisAttributes[isisKey])
+                                        if status_dict['DHCP_Ipv4'] == True:
+                                            dhcpHost = dict()
+                                            dhcpHostAttributes = {'Manual Gateway Ip': 'dhcp4GatewayAddress',
+                                                                  'Manual Gateway Mac': 'dhcp4GatewayMac', \
+                                                                  'TLV Profile': 'no', 'Renew Timer': 'renewTimer',
+                                                                  'Rapid Commit': 'useRapidCommit', \
+                                                                  'Use First Server': 'dhcp4UseFirstServer',
+                                                                  'Server Address': 'dhcp4ServerAddress',
+                                                                  'Broadcast': 'dhcp4Broadcast'}
+                                            if 'DHCP_Ipv4' in Worksheet_Dict:
+                                                for device_group_name in Worksheet_Dict['DHCP_Ipv4']:
+                                                    # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                    if 'Device Group' in device_group_name:
+                                                        if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                            dhcpHost.update({"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]')})
+                                                            self.config.append({key: value for key, value in dhcpHost.items()})
+                                                            device_group_name.pop('Device Group')
+                                                            for dhcpHostKey in device_group_name:
+                                                                if dhcpHostKey != 'TLV Profile':
+                                                                    self.config_multivalueObj(
+                                                                        device_group_name[dhcpHostKey],
+                                                                        dhcpHost['xpath'],
+                                                                        dhcpHostAttributes[dhcpHostKey])
+                                                                else:
+                                                                    if device_group_name[dhcpHostKey] != 'no':
+                                                                        tlvAttributes = {
+                                                                            'Enable Per session': 'enablePerSession',
+                                                                            'Enable Field': 'isEnabled', 'Value': '',
+                                                                            'Include In': 'includeInMessages'}
+                                                                        tlvProfile = {"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]/tlvProfile')}
+                                                                        self.config.append({key: value for key, value in tlvProfile.items()})
+                                                                        defaultTlv = {"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]/tlvProfile/defaultTlv[1]')}
+                                                                        self.config.append({key: value for key, value in tlvProfile.items()})
+                                                                        # Not yet implemented
+                                                                        # for dhcpHostKey in device_group_name:
+                                                                        #     self.config_multivalueObj(device_group_name[dhcpHostKey],
+                                                                        #         defaultTlv['xpath'], tlvAttributes[dhcpHostKey])
+
+                                                                    else:
+                                                                        pass
+                                        if status_dict['DHCP_Serverv4'] == True:
+                                            dhcpServer = dict()
+                                            dhcpServerAttributes = {'Start Pool Address': 'ipAddress',
+                                                                  'Pool Address Increment': 'ipAddressIncrement', \
+                                                                  'IP Prefix': 'ipPrefix', 'Pool Size': 'poolSize',
+                                                                  'Lease Time': 'defaultLeaseTime', 'Rapid Commit': 'useRapidCommit',
+                                                                  'Assign Ip on Specific Subnet': 'subnetAddrAssign', 'Subnet':'subnet'}
+                                            if 'DHCP_Serverv4' in Worksheet_Dict:
+                                                for device_group_name in Worksheet_Dict['DHCP_Serverv4']:
+                                                    if 'Device Group' in device_group_name:
+                                                        if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                            dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]/dhcpv4server[1]')})
+                                                            self.config.append({key: value for key, value in dhcpServer.items()})
+                                                            device_group_name.pop('Device Group')
+                                                            for dhcpServerKey in device_group_name:
+                                                                if dhcpServerKey != 'Pool Count':
+                                                                    self.config_multivalueObj(device_group_name[dhcpServerKey],
+                                                                            dhcpServer['xpath']+'/dhcp4ServerSessions',dhcpServerAttributes[dhcpServerKey])
+                                                                else:
+                                                                    dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]/dhcpv4server[1]'), "poolCount": device_group_name['Pool Count']})
+                                                                    self.config.append({key: value for key, value in dhcpServer.items()})
+
+                                        if 'DHCP_Ipv6' in status_dict:
+                                            if status_dict['DHCP_Ipv6'] == True:
+                                                dhcpHost = dict()
+                                                dhcpHostAttributes = {'Manual Gateway Ipv6': 'dhcp6GatewayAddress', 'Manual Gateway Mac':'dhcp6GatewayMac', \
+                                                                    'TLV Profile': 'no', 'Renew Timer': 'renewTimer', 'Rapid Commit':'useRapidCommit', \
+                                                                    'IANA Count':'dhcp6IANACount', 'IAPD Count':'dhcp6IAPDCount', 'Custom Link Local Address':'customLinkLocalAddress',
+                                                                      'IA Type':'dhcp6IaType', 'IA ID':'dhcp6IaId', 'IA ID Incremet':'dhcp6IaIdInc', 'IA T1':'dhcp6IaT1', 'IA T2':'dhcp6IaT2', 'DUID Type':'dhcp6DuidType',
+                                                                      'DUID Enterprise ID':'dhcp6DuidEnterpriseId', 'DUID Vendor ID':'dhcp6DuidVendorId'}
+                                                #'Stateless Mode':'', 'Maximum Leases per Client':'',
+                                                if 'DHCP_Ipv6' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['DHCP_Ipv6']:
+                                                        # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                        if 'Device Group' in device_group_name:
+                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                                dhcpHost.update({"xpath": (ethernetinfo['xpath'] + '/dhcpv6client[1]')})
+                                                                self.config.append({key: value for key, value in dhcpHost.items()})
+                                                                device_group_name.pop('Device Group')
+                                                                for dhcpHostKey in device_group_name:
+                                                                    if dhcpHostKey != 'TLV Profile':
+                                                                        self.config_multivalueObj(device_group_name[dhcpHostKey],
+                                                                                                  dhcpHost['xpath'], dhcpHostAttributes[dhcpHostKey])
+                                        if status_dict['DHCP_Serverv6'] == True:
+                                            dhcpServer = dict()
+                                            dhcpServerAttributes = {'Start Pool Address': 'ipAddress',
+                                                                  'Pool Address Increment': 'ipAddressIncrement', \
+                                                                  'IP Prefix': 'ipPrefix', 'Pool Size': 'poolSize',
+                                                                  'Lease Time': 'defaultLeaseTime', 'Rapid Commit': 'useRapidCommit',
+                                                                  'Start Pool Prefix': 'ipAddressPD', 'Pool Prefix Increment':'ipPrefixIncrement',
+                                                                  'Prefix Length':'prefixLength', 'Pool Prefix Size':'poolPrefixSize'}
+                                            if 'DHCP_Serverv6' in Worksheet_Dict:
+                                                for device_group_name in Worksheet_Dict['DHCP_Serverv6']:
+                                                    if 'Device Group' in device_group_name:
+                                                        if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                            dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]')})
+                                                            self.config.append({key: value for key, value in dhcpServer.items()})
+                                                            device_group_name.pop('Device Group')
+                                                            for dhcpServerKey in device_group_name:
+                                                                if dhcpServerKey != 'Pool Count':
+                                                                    self.config_multivalueObj(device_group_name[dhcpServerKey],
+                                                                            dhcpServer['xpath']+'/dhcp6ServerSessions',dhcpServerAttributes[dhcpServerKey])
+                                                                else:
+                                                                    dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]'), "poolCount": device_group_name['Pool Count']})
+                                                                    self.config.append({key: value for key, value in dhcpServer.items()})
 
                                         if 'IGMP_Host' in status_dict:
                                             if status_dict['IGMP_Host'] == True:
