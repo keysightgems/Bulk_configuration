@@ -1,7 +1,7 @@
 from obtain_data_from_excel import excelReader
 from datetime import datetime
 from ixnetwork_restpy import SessionAssistant
-import json,re
+import json,re,copy
 
 class BulkConfig():
     def __init__(self,apiServerIp, clearConfig):
@@ -98,37 +98,42 @@ class BulkConfig():
                                         # Adding vlan info to the Ethernet
                                         if 'Device Group' in row:
                                             if row['Device Group'] == devicegroupinfo['name']:
-                                                if 'Vlan Header' in row:
-                                                    if row['Vlan Header']:
-                                                        enablevlaninfo = {"xpath": '"/multivalue[@source = ' + ethernetinfo[
-                                                            'xpath'] + " enableVlans']/singleValue",
-                                                                          "value": "true"}
-                                                        self.config.append({key: value for key, value in enablevlaninfo.items()})
-                                                        vlanxpathinfo = {"xpath": ethernetinfo['xpath'] + "/vlan[1]"}
-                                                        self.config.append({key: value for key, value in vlanxpathinfo.items()})
-                                                        # Vlan with random user defined values
-                                                        if not isinstance(row['Vlan Header'], int):
-                                                            vlanlist = row['Vlan Header'].split(';')
-                                                            if vlanlist[0] == 'valuelist':
-                                                                vlanlist.pop(0)
-                                                                vlanIDinfo = {"xpath": '"/multivalue[@source = ' + vlanxpathinfo['xpath'] + " vlanId']/valueList",
-                                                                              "values": vlanlist}
-                                                                self.config.append({key: value for key, value in vlanIDinfo.items()})
-                                                            if vlanlist[0] == 'increment':
-                                                                vlanIDinfo = {"xpath": '"/multivalue[@source = ' + vlanxpathinfo['xpath'] + " vlanId']/counter",
-                                                                              "start": vlanlist[1], "step": vlanlist[2], "direction": 'increment'}
-                                                                self.config.append({key: value for key, value in vlanIDinfo.items()})
-                                                        # Single vlan ID json creation
-                                                        if isinstance(row['Vlan Header'], int):
-                                                            vlanIDinfo = {"xpath": '"/multivalue[@source = ' + vlanxpathinfo[
-                                                                'xpath'] + " vlanId']/singleValue",
-                                                                          "value": row['Vlan Header']}
-                                                            self.config.append({key: value for key, value in vlanIDinfo.items()})
-                                                    if 'VLAN Count' in row:
-                                                        if row['VLAN Count']:
-                                                            vlanCountinfo = {"xpath": ethernetinfo['xpath'],
-                                                                          "vlanCount": row['VLAN Count']}
-                                                            self.config.append({key: value for key, value in vlanCountinfo.items()})
+                                                enablevlaninfo = {}
+                                                ethernetAttributes = {'MAC':'mac', 'MTU':'mtu', 'Enable VLANs':'enableVlans', 'VLAN Count':'vlanCount'}
+                                                vlanAttributes = {'VLAN ID':'vlanId', 'Priority':'priority'}
+                                                self.config.append({key: value for key, value in enablevlaninfo.items()})
+                                                vlanxpathinfo = {"xpath": ethernetinfo['xpath'] + "/vlan[1]"}
+                                                self.config.append({key: value for key, value in vlanxpathinfo.items()})
+
+                                                # Vlan with random user defined values
+                                                rowHearderList = copy.deepcopy(row)
+                                                rowHearderList.pop('Multiplier')
+                                                rowHearderList.pop('Topology')
+                                                rowHearderList.pop('Device Group')
+                                                for rowName in rowHearderList:
+                                                    if rowName != 'Topology':
+                                                        if rowName != 'Device Group':
+                                                            if 'Enable VLANs' in rowHearderList:
+                                                                self.config_multivalueObj(row['Enable VLANs'],
+                                                                                          ethernetinfo['xpath'],
+                                                                                          ethernetAttributes['Enable VLANs'])
+                                                                if rowName == 'VLAN ID':
+                                                                    self.config_multivalueObj(row[rowName],
+                                                                                              vlanxpathinfo['xpath'],
+                                                                                              vlanAttributes[rowName])
+                                                                elif rowName == 'Priority':
+                                                                    self.config_multivalueObj(row[rowName],
+                                                                                              vlanxpathinfo['xpath'],
+                                                                                              vlanAttributes[rowName])
+
+                                                                elif rowName == 'VLAN Count':
+                                                                    vlanCount =  {"xpath": ethernetinfo['xpath'], "vlanCount": row['VLAN Count']}
+                                                                    self.config.append({key: value for key, value in
+                                                                                       vlanCount.items()})
+                                                                else:
+                                                                    self.config_multivalueObj(row[rowName],
+                                                                                              ethernetinfo['xpath'],
+                                                                                              ethernetAttributes[rowName])
 
                                         # Verify IPv4 data presence and add stack
                                         if 'IPv4_Ethernet' in status_dict:
@@ -235,9 +240,9 @@ class BulkConfig():
                                         if 'IPv4_BGP' in status_dict:
                                             if status_dict['IPv4_BGP'] == True:
                                                 bgpv4 = dict()
-                                                bgpv4Attributes = {'Dut IP':'dutIp', 'BGP Id':'bgpId', 'Type':'type', 'Local AS':'localAs2Bytes', 'Enable As 4bytes':'enable4ByteAs', 'Local AS 4byte':'localAs4Bytes', \
+                                                bgpv4Attributes = {'DUT IP':'dutIp', 'BGP ID':'bgpId', 'Type':'type', 'Local AS':'localAs2Bytes', 'Enable As 4bytes':'enable4ByteAs', 'Local AS 4byte':'localAs4Bytes', \
                                                                    'As Mode':'asSetMode', 'Enable BFD':'enableBfdRegistration', 'BFD Mode':'modeOfBfdOperations', 'Hold Timer':'holdTimer', 'Config Keepalive':'configureKeepaliveTimer', 'Keepalive':'keepaliveTimer', \
-                                                                   'Update Interval':'updateInterval', 'TTL':'ttl', 'Authentication':'authentication', 'Key':'md5Key', 'Flap':'flap',
+                                                                   'Update Interval':'updateInterval', 'TTL':'ttl', 'Authentication':'authentication', 'MD5 Key':'md5Key', 'Flap':'flap',
                                                                    'Uptime in Seconds':'uptimeInSec', 'Downtime in Seconds':'downtimeInSec'}
                                                 if 'IPv4_BGP' in Worksheet_Dict:
                                                     for device_group_name in Worksheet_Dict['IPv4_BGP']:
@@ -265,9 +270,9 @@ class BulkConfig():
                                         if 'IPv6_BGP' in status_dict:
                                             if status_dict['IPv6_BGP'] == True:
                                                 bgpv6 = dict()
-                                                bgpv6Attributes = {'Dut IP':'dutIp', 'Type':'type', 'Local AS':'localAs2Bytes', 'Enable As 4bytes':'enable4ByteAs', 'Local AS 4byte':'localAs4Bytes',\
+                                                bgpv6Attributes = {'DUT IP':'dutIp', 'Type':'type', 'Local AS':'localAs2Bytes', 'Enable As 4bytes':'enable4ByteAs', 'Local AS 4byte':'localAs4Bytes',\
                                                                    'Hold Timer':'holdTimer', 'Config Keepalive':'configureKeepaliveTimer', 'Keepalive':'keepaliveTimer', 'Authentication':'authentication',\
-                                                                   'Key':'md5Key', 'As Mode':'asSetMode', 'Enable BFD':'enableBfdRegistration', 'BFD Mode':'modeOfBfdOperations', 'Flap':'flap',
+                                                                   'MD5 Key':'md5Key', 'As Mode':'asSetMode', 'Enable BFD':'enableBfdRegistration', 'BFD Mode':'modeOfBfdOperations', 'Flap':'flap',
                                                                    'Uptime in Seconds':'uptimeInSec', 'Downtime in Seconds':'downtimeInSec'}
                                                 if 'IPv6_BGP' in Worksheet_Dict:
                                                     for device_group_name in Worksheet_Dict['IPv6_BGP']:
@@ -298,7 +303,7 @@ class BulkConfig():
                                                 ospfv4 = dict()
                                                 ospfv4Attributes = {'Neighbor IP':'neighborIp', 'Area':'areaId', 'Network Type':'networkType', 'Hello Timers':'helloInterval',\
                                                                     'Dead Timers':'deadInterval', 'Routing Metric':'metric', 'Validate Receive MTU':'validateRxMtu', 'MTU':'maxMtu',\
-                                                                    'Authentication':'authentication', 'Key Id':'md5KeyId', 'Key':'md5Key'}
+                                                                    'Authentication':'authentication', 'MD5 Key ID':'md5KeyId', 'MD5 Key':'md5Key'}
                                                 if 'IPv4_OSPF' in Worksheet_Dict:
                                                     for device_group_name in Worksheet_Dict['IPv4_OSPF']:
                                                         # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
@@ -316,7 +321,7 @@ class BulkConfig():
                                                 ospfv6Attributes = {'Neighbor IP': 'neighborIp', 'Area': 'areaId',
                                                                     'Network Type': 'networkType', 'Hello Timers': 'helloInterval', \
                                                                     'Dead Timers': 'deadInterval', 'Link Metric': 'linkMetric', 'Authentication Algo': 'authAlgo',\
-                                                                    'Authentication': 'authentication', 'SA Id': 'saId', 'Key': 'md5Key'}
+                                                                    'Authentication': 'authentication', 'SA ID': 'saId', 'Key': 'md5Key'}
                                                 if 'IPv6_OSPF' in Worksheet_Dict:
                                                     for device_group_name in Worksheet_Dict['IPv6_OSPF']:
                                                         # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
@@ -332,7 +337,7 @@ class BulkConfig():
                                             if status_dict['ISIS'] == True:
                                                 isis = dict()
                                                 isisAttributes = {'Interface Metric': 'interfaceMetric', 'Weight':'weight', \
-                                                                    'Enable Hold Time': 'enableConfiguredHoldTime', 'Configured Hold Time': 'configuredHoldTime', 'Enable 3WayHandshake':'enable3WayHandshake', \
+                                                                    'Enable Hold Time': 'enableConfiguredHoldTime', 'Configured Hold Time': 'configuredHoldTime', 'Enable 3-Way Handshake':'enable3WayHandshake', \
                                                                     'Enable MT': 'enableMT', 'Enable Adj Sid': 'enableAdjSID', 'Adj Sid': 'adjSID', 'Enable BFD':'enableBfdRegistration',\
                                                                     'Ipv6 Metric': 'ipv6MTMetric', 'Network Type': 'networkType', 'Level Type': 'levelType', 'Level 1 Hello Interval':'level1HelloInterval', 'Level 1 Dead Interval':'level1DeadInterval',\
                                                                     'Max Sl Msd':'maxSlMsd', 'Level 2 Hello Interval':'level2HelloInterval', 'Level 2 Dead Interval':'level2DeadInterval', 'Authentication Type':'authType', 'Key':'circuitTranmitPasswordOrMD5Key'}
@@ -347,67 +352,69 @@ class BulkConfig():
                                                                 for isisKey in device_group_name:
                                                                     self.config_multivalueObj(device_group_name[isisKey],
                                                                                               isis['xpath'], isisAttributes[isisKey])
-                                        if status_dict['DHCP_Ipv4'] == True:
-                                            dhcpHost = dict()
-                                            dhcpHostAttributes = {'Manual Gateway Ip': 'dhcp4GatewayAddress',
-                                                                  'Manual Gateway Mac': 'dhcp4GatewayMac', \
-                                                                  'TLV Profile': 'no', 'Renew Timer': 'renewTimer',
-                                                                  'Rapid Commit': 'useRapidCommit', \
-                                                                  'Use First Server': 'dhcp4UseFirstServer',
-                                                                  'Server Address': 'dhcp4ServerAddress',
-                                                                  'Broadcast': 'dhcp4Broadcast'}
-                                            if 'DHCP_Ipv4' in Worksheet_Dict:
-                                                for device_group_name in Worksheet_Dict['DHCP_Ipv4']:
-                                                    # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
-                                                    if 'Device Group' in device_group_name:
-                                                        if device_group_name['Device Group'] == devicegroupinfo['name']:
-                                                            dhcpHost.update({"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]')})
-                                                            self.config.append({key: value for key, value in dhcpHost.items()})
-                                                            device_group_name.pop('Device Group')
-                                                            for dhcpHostKey in device_group_name:
-                                                                if dhcpHostKey != 'TLV Profile':
-                                                                    self.config_multivalueObj(
-                                                                        device_group_name[dhcpHostKey],
-                                                                        dhcpHost['xpath'],
-                                                                        dhcpHostAttributes[dhcpHostKey])
-                                                                else:
-                                                                    if device_group_name[dhcpHostKey] != 'no':
-                                                                        tlvAttributes = {
-                                                                            'Enable Per session': 'enablePerSession',
-                                                                            'Enable Field': 'isEnabled', 'Value': '',
-                                                                            'Include In': 'includeInMessages'}
-                                                                        tlvProfile = {"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]/tlvProfile')}
-                                                                        self.config.append({key: value for key, value in tlvProfile.items()})
-                                                                        defaultTlv = {"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]/tlvProfile/defaultTlv[1]')}
-                                                                        self.config.append({key: value for key, value in tlvProfile.items()})
-                                                                        # Not yet implemented
-                                                                        # for dhcpHostKey in device_group_name:
-                                                                        #     self.config_multivalueObj(device_group_name[dhcpHostKey],
-                                                                        #         defaultTlv['xpath'], tlvAttributes[dhcpHostKey])
-
+                                        if 'DHCP_Ipv4' in status_dict:
+                                            if status_dict['DHCP_Ipv4'] == True:
+                                                dhcpHost = dict()
+                                                dhcpHostAttributes = {'Manual Gateway Ip': 'dhcp4GatewayAddress',
+                                                                      'Manual Gateway Mac': 'dhcp4GatewayMac', \
+                                                                      'TLV Profile': 'no', 'Renew Timer': 'renewTimer',
+                                                                      'Rapid Commit': 'useRapidCommit', \
+                                                                      'Use First Server': 'dhcp4UseFirstServer',
+                                                                      'Server Address': 'dhcp4ServerAddress',
+                                                                      'Broadcast': 'dhcp4Broadcast'}
+                                                if 'DHCP_Ipv4' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['DHCP_Ipv4']:
+                                                        # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                        if 'Device Group' in device_group_name:
+                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                                dhcpHost.update({"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]')})
+                                                                self.config.append({key: value for key, value in dhcpHost.items()})
+                                                                device_group_name.pop('Device Group')
+                                                                for dhcpHostKey in device_group_name:
+                                                                    if dhcpHostKey != 'TLV Profile':
+                                                                        self.config_multivalueObj(
+                                                                            device_group_name[dhcpHostKey],
+                                                                            dhcpHost['xpath'],
+                                                                            dhcpHostAttributes[dhcpHostKey])
                                                                     else:
-                                                                        pass
-                                        if status_dict['DHCP_Serverv4'] == True:
-                                            dhcpServer = dict()
-                                            dhcpServerAttributes = {'Start Pool Address': 'ipAddress',
-                                                                  'Pool Address Increment': 'ipAddressIncrement', \
-                                                                  'IP Prefix': 'ipPrefix', 'Pool Size': 'poolSize',
-                                                                  'Lease Time': 'defaultLeaseTime', 'Rapid Commit': 'useRapidCommit',
-                                                                  'Assign Ip on Specific Subnet': 'subnetAddrAssign', 'Subnet':'subnet'}
-                                            if 'DHCP_Serverv4' in Worksheet_Dict:
-                                                for device_group_name in Worksheet_Dict['DHCP_Serverv4']:
-                                                    if 'Device Group' in device_group_name:
-                                                        if device_group_name['Device Group'] == devicegroupinfo['name']:
-                                                            dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]/dhcpv4server[1]')})
-                                                            self.config.append({key: value for key, value in dhcpServer.items()})
-                                                            device_group_name.pop('Device Group')
-                                                            for dhcpServerKey in device_group_name:
-                                                                if dhcpServerKey != 'Pool Count':
-                                                                    self.config_multivalueObj(device_group_name[dhcpServerKey],
-                                                                            dhcpServer['xpath']+'/dhcp4ServerSessions',dhcpServerAttributes[dhcpServerKey])
-                                                                else:
-                                                                    dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]/dhcpv4server[1]'), "poolCount": device_group_name['Pool Count']})
-                                                                    self.config.append({key: value for key, value in dhcpServer.items()})
+                                                                        if device_group_name[dhcpHostKey] != 'no':
+                                                                            tlvAttributes = {
+                                                                                'Enable Per session': 'enablePerSession',
+                                                                                'Enable Field': 'isEnabled', 'Value': '',
+                                                                                'Include In': 'includeInMessages'}
+                                                                            tlvProfile = {"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]/tlvProfile')}
+                                                                            self.config.append({key: value for key, value in tlvProfile.items()})
+                                                                            defaultTlv = {"xpath": (ethernetinfo['xpath'] + '/dhcpv4client[1]/tlvProfile/defaultTlv[1]')}
+                                                                            self.config.append({key: value for key, value in tlvProfile.items()})
+                                                                            # Not yet implemented
+                                                                            # for dhcpHostKey in device_group_name:
+                                                                            #     self.config_multivalueObj(device_group_name[dhcpHostKey],
+                                                                            #         defaultTlv['xpath'], tlvAttributes[dhcpHostKey])
+
+                                                                        else:
+                                                                            pass
+                                        if 'DHCP_Serverv4' in status_dict:
+                                            if status_dict['DHCP_Serverv4'] == True:
+                                                dhcpServer = dict()
+                                                dhcpServerAttributes = {'Start Pool Address': 'ipAddress',
+                                                                      'Pool Address Increment': 'ipAddressIncrement', \
+                                                                      'IP Prefix': 'ipPrefix', 'Pool Size': 'poolSize',
+                                                                      'Lease Time': 'defaultLeaseTime', 'Rapid Commit': 'useRapidCommit',
+                                                                      'Assign Ip on Specific Subnet': 'subnetAddrAssign', 'Subnet':'subnet'}
+                                                if 'DHCP_Serverv4' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['DHCP_Serverv4']:
+                                                        if 'Device Group' in device_group_name:
+                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                                dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]/dhcpv4server[1]')})
+                                                                self.config.append({key: value for key, value in dhcpServer.items()})
+                                                                device_group_name.pop('Device Group')
+                                                                for dhcpServerKey in device_group_name:
+                                                                    if dhcpServerKey != 'Pool Count':
+                                                                        self.config_multivalueObj(device_group_name[dhcpServerKey],
+                                                                                dhcpServer['xpath']+'/dhcp4ServerSessions',dhcpServerAttributes[dhcpServerKey])
+                                                                    else:
+                                                                        dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]/dhcpv4server[1]'), "poolCount": device_group_name['Pool Count']})
+                                                                        self.config.append({key: value for key, value in dhcpServer.items()})
 
                                         if 'DHCP_Ipv6' in status_dict:
                                             if status_dict['DHCP_Ipv6'] == True:
@@ -430,28 +437,29 @@ class BulkConfig():
                                                                     if dhcpHostKey != 'TLV Profile':
                                                                         self.config_multivalueObj(device_group_name[dhcpHostKey],
                                                                                                   dhcpHost['xpath'], dhcpHostAttributes[dhcpHostKey])
-                                        if status_dict['DHCP_Serverv6'] == True:
-                                            dhcpServer = dict()
-                                            dhcpServerAttributes = {'Start Pool Address': 'ipAddress',
-                                                                  'Pool Address Increment': 'ipAddressIncrement', \
-                                                                  'IP Prefix': 'ipPrefix', 'Pool Size': 'poolSize',
-                                                                  'Lease Time': 'defaultLeaseTime', 'Rapid Commit': 'useRapidCommit',
-                                                                  'Start Pool Prefix': 'ipAddressPD', 'Pool Prefix Increment':'ipPrefixIncrement',
-                                                                  'Prefix Length':'prefixLength', 'Pool Prefix Size':'poolPrefixSize'}
-                                            if 'DHCP_Serverv6' in Worksheet_Dict:
-                                                for device_group_name in Worksheet_Dict['DHCP_Serverv6']:
-                                                    if 'Device Group' in device_group_name:
-                                                        if device_group_name['Device Group'] == devicegroupinfo['name']:
-                                                            dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]')})
-                                                            self.config.append({key: value for key, value in dhcpServer.items()})
-                                                            device_group_name.pop('Device Group')
-                                                            for dhcpServerKey in device_group_name:
-                                                                if dhcpServerKey != 'Pool Count':
-                                                                    self.config_multivalueObj(device_group_name[dhcpServerKey],
-                                                                            dhcpServer['xpath']+'/dhcp6ServerSessions',dhcpServerAttributes[dhcpServerKey])
-                                                                else:
-                                                                    dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]'), "poolCount": device_group_name['Pool Count']})
-                                                                    self.config.append({key: value for key, value in dhcpServer.items()})
+                                        if 'DHCP_Serverv6' in status_dict:
+                                            if status_dict['DHCP_Serverv6'] == True:
+                                                dhcpServer = dict()
+                                                dhcpServerAttributes = {'Start Pool Address': 'ipAddress',
+                                                                      'Pool Address Increment': 'ipAddressIncrement', \
+                                                                      'IP Prefix': 'ipPrefix', 'Pool Size': 'poolSize',
+                                                                      'Lease Time': 'defaultLeaseTime', 'Rapid Commit': 'useRapidCommit',
+                                                                      'Start Pool Prefix': 'ipAddressPD', 'Pool Prefix Increment':'ipPrefixIncrement',
+                                                                      'Prefix Length':'prefixLength', 'Pool Prefix Size':'poolPrefixSize'}
+                                                if 'DHCP_Serverv6' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['DHCP_Serverv6']:
+                                                        if 'Device Group' in device_group_name:
+                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                                dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]')})
+                                                                self.config.append({key: value for key, value in dhcpServer.items()})
+                                                                device_group_name.pop('Device Group')
+                                                                for dhcpServerKey in device_group_name:
+                                                                    if dhcpServerKey != 'Pool Count':
+                                                                        self.config_multivalueObj(device_group_name[dhcpServerKey],
+                                                                                dhcpServer['xpath']+'/dhcp6ServerSessions',dhcpServerAttributes[dhcpServerKey])
+                                                                    else:
+                                                                        dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]'), "poolCount": device_group_name['Pool Count']})
+                                                                        self.config.append({key: value for key, value in dhcpServer.items()})
 
                                         if 'IGMP_Host' in status_dict:
                                             if status_dict['IGMP_Host'] == True:
@@ -761,49 +769,51 @@ class BulkConfig():
                             traffic.append({key: value for key, value in trackinginfo.items()})
                         # Need to add config element stack ipv4, ipv6,tcp,udp
                         configElementStack = []
-                        if status_dict['packet_editor'] == True:
-                            layer4Index = 4
-                            for packetInfo in Worksheet_Dict['packet_editor']:
-                                if packetInfo['Traffic name'] == traffic_items['name']:
-                                    if 'Type' in packetInfo:
-                                        if ';' in packetInfo['Type']:
-                                            prtotocolTypeList = [packetType.lower() for packetType in packetInfo['Type'].split(';')]
-                                        else:
-                                            prtotocolTypeList = [packetInfo['Type'].lower()]
-                                        for protocolType in prtotocolTypeList:
+                        if 'packet_editor' in status_dict:
+                            if status_dict['packet_editor'] == True:
+                                layer4Index = 4
+                                if 'packet_editor' in Worksheet_Dict:
+                                    for packetInfo in Worksheet_Dict['packet_editor']:
+                                        if packetInfo['Traffic name'] == traffic_items['name']:
+                                            if 'Type' in packetInfo:
+                                                if ';' in packetInfo['Type']:
+                                                    prtotocolTypeList = [packetType.lower() for packetType in packetInfo['Type'].split(';')]
+                                                else:
+                                                    prtotocolTypeList = [packetInfo['Type'].lower()]
+                                                for protocolType in prtotocolTypeList:
 
-                                        # if packetInfo['Type'].lower() == 'udp':
-                                            udpXpathDict = dict()
-                                            udpSourcePortDict = dict()
-                                            udpDestinationPortDict = dict()
-                                            udpFields = []
-                                            if 'Source Port' in packetInfo and 'Destination Port' in packetInfo:
-                                                if packetInfo['Source Port'] != '' and packetInfo['Destination Port'] != '':
-                                                    udpPortsAuto = 'true'
-                                                sourcePort = packetInfo['Source Port']
-                                                destinationPort = packetInfo['Destination Port']
-                                            else:
-                                                udpPortsAuto = 'false'
-                                                sourcePort = 63
-                                                destinationPort = 123
-                                            udpSourcePortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = " + protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]/field[@alias = " + protocolType +".header.srcPort-1]",
-                                                                      "singleValue": sourcePort,
-                                                                      "fieldValue": 'Default',
-                                                                      "stepValue": "1",
-                                                                      "valueType": "increment", "auto": udpPortsAuto,
-                                                                      "startValue": sourcePort,
-                                                                      "countValue": "1"})
-                                            udpFields.append({key: value for key, value in udpSourcePortDict.items()})
-                                            udpDestinationPortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = "+ protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]/field[@alias = "+ protocolType +".header.dstPort-2]",
-                                                                           "singleValue": destinationPort,
-                                                                           "fieldValue": 'Default',
-                                                                           "stepValue": "1", "auto": udpPortsAuto,
-                                                                           "valueType": "increment",
-                                                                           "startValue": destinationPort, "countValue": "1"})
-                                            udpFields.append({key: value for key, value in udpDestinationPortDict.items()})
-                                            udpXpathDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = "+ protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]",
-                                                                 "field": udpFields})
-                                            configElementStack.append({key: value for key, value in udpXpathDict.items()})
+                                                # if packetInfo['Type'].lower() == 'udp':
+                                                    udpXpathDict = dict()
+                                                    udpSourcePortDict = dict()
+                                                    udpDestinationPortDict = dict()
+                                                    udpFields = []
+                                                    if 'Source Port' in packetInfo and 'Destination Port' in packetInfo:
+                                                        if packetInfo['Source Port'] != '' and packetInfo['Destination Port'] != '':
+                                                            udpPortsAuto = 'true'
+                                                        sourcePort = packetInfo['Source Port']
+                                                        destinationPort = packetInfo['Destination Port']
+                                                    else:
+                                                        udpPortsAuto = 'false'
+                                                        sourcePort = 63
+                                                        destinationPort = 123
+                                                    udpSourcePortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = " + protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]/field[@alias = " + protocolType +".header.srcPort-1]",
+                                                                              "singleValue": sourcePort,
+                                                                              "fieldValue": 'Default',
+                                                                              "stepValue": "1",
+                                                                              "valueType": "increment", "auto": udpPortsAuto,
+                                                                              "startValue": sourcePort,
+                                                                              "countValue": "1"})
+                                                    udpFields.append({key: value for key, value in udpSourcePortDict.items()})
+                                                    udpDestinationPortDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = "+ protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]/field[@alias = "+ protocolType +".header.dstPort-2]",
+                                                                                   "singleValue": destinationPort,
+                                                                                   "fieldValue": 'Default',
+                                                                                   "stepValue": "1", "auto": udpPortsAuto,
+                                                                                   "valueType": "increment",
+                                                                                   "startValue": destinationPort, "countValue": "1"})
+                                                    udpFields.append({key: value for key, value in udpDestinationPortDict.items()})
+                                                    udpXpathDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]" + "/stack[@alias = "+ protocolType + "-" + str(layer4Index + prtotocolTypeList.index(protocolType)) + "]",
+                                                                         "field": udpFields})
+                                                    configElementStack.append({key: value for key, value in udpXpathDict.items()})
 
                         configElementDict.update({"xpath": traffic_items['xpath'] + "/configElement[1]",
                                                   "crc": "goodCrc",
