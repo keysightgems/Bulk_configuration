@@ -50,6 +50,44 @@ class BulkConfig():
             stackvalueinfo = {"xpath": '"/multivalue[@source = ' + stackPath + " " +stackAttribute+"']/singleValue", "value": deviceGroupValue}
             self.config.append({key: value for key, value in stackvalueinfo.items()})
 
+    def _igmp_mld_config(self, devicegroupinfo, ethernetinfo, device_group_name, ipVersion, host, groupAttributes, sourceAttributes, hostName, groupName, sourceName):
+
+        # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+        if 'Device Group' in device_group_name:
+            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                host.update({"xpath": (ethernetinfo['xpath']+'/'+ipVersion+'[1]'+'/'+hostName+'[1]')})
+                self.config.append({key: value for key, value in host.items()})
+                device_group_name.pop('Device Group')
+                if 'No Of Group Ranges' in device_group_name:
+                    groupRanges = {"xpath": (ethernetinfo['xpath']+'/'+ipVersion+'[1]'+'/'+hostName+'[1]'),
+                                   "noOfGrpRanges": device_group_name['No Of Group Ranges']}
+                    self.config.append({key: value for key, value in groupRanges.items()})
+                if 'Join/Leave Multiplier' in device_group_name:
+                    groupRanges = {"xpath": (ethernetinfo['xpath']+'/'+ipVersion+'[1]'+'/'+hostName+'[1]'),
+                                   "jlMultiplier": device_group_name['Join/Leave Multiplier']}
+                    self.config.append({key: value for key, value in groupRanges.items()})
+                if 'Version' in device_group_name:
+                    self.config_multivalueObj(device_group_name['Version'], host['xpath'], 'versionType')
+                if 'No Of Source Ranges' in device_group_name:
+                    sourceRanges = {
+                        "xpath": (ethernetinfo['xpath']+'/'+ipVersion+'[1]'+'/'+hostName+'[1]/'+groupName),
+                        "noOfSrcRanges": device_group_name['No Of Source Ranges']}
+                    self.config.append({key: value for key, value in sourceRanges.items()})
+                for HostKey in device_group_name:
+                    try:
+                        self.config_multivalueObj(device_group_name[HostKey],
+                                                  host['xpath']+'/'+groupName,
+                                                  groupAttributes[HostKey])
+                    except:
+                        pass
+
+                for HostKey in device_group_name:
+                    try:
+                        self.config_multivalueObj(device_group_name[HostKey],
+                                                  host['xpath']+'/'+groupName+'/'+sourceName,
+                                                  sourceAttributes[HostKey])
+                    except:
+                        pass
     def bulk_config(self, workbook_name):
         # Initiates the excelReader class to obtain all data from the input file
         excel = excelReader(workbook_name)
@@ -461,53 +499,46 @@ class BulkConfig():
                                                                         dhcpServer.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]/dhcpv6server[1]'), "poolCount": device_group_name['Pool Count']})
                                                                         self.config.append({key: value for key, value in dhcpServer.items()})
 
+                                        hostGroupAttributes = {'Start Group Address': 'startMcastAddr',
+                                                                   'Group Address Incr': 'mcastAddrIncr',
+                                                                   'Group Address Count': 'mcastAddrCnt',
+                                                                   'Source Mode': 'sourceMode'}
+                                        hostSourceAttributes = {'Start Source Address': 'startUcastAddr',
+                                                                    'Source Address Incr': 'ucastAddrIncr',
+                                                                    'Source Address Count': 'ucastSrcAddrCnt'}
                                         if 'IGMP_Host' in status_dict:
                                             if status_dict['IGMP_Host'] == True:
                                                 igmpHost = dict()
-                                                igmpHostGroupAttributes = {'Start Group Address':'startMcastAddr', 'Group Address Incr':'mcastAddrIncr', 'Group Address Count':'mcastAddrCnt', 'Source Mode':'sourceMode'}
-                                                igmpHostSourceAttributes = {'Start Source Address': 'startUcastAddr', 'Source Address Incr': 'ucastAddrIncr',
-                                                                           'Source Address Count': 'ucastSrcAddrCnt'}
                                                 if 'IGMP_Host' in Worksheet_Dict:
                                                     for device_group_name in Worksheet_Dict['IGMP_Host']:
-                                                        # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
-                                                        if 'Device Group' in device_group_name:
-                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
-                                                                igmpHost.update({"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/igmpHost[1]')})
-                                                                self.config.append({key: value for key, value in igmpHost.items()})
-                                                                device_group_name.pop('Device Group')
-                                                                if 'No Of Group Ranges' in device_group_name:
-                                                                    groupRanges = {"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/igmpHost[1]'),
-                                                                                  "noOfGrpRanges": device_group_name['No Of Group Ranges']}
-                                                                    self.config.append({key: value for key, value in groupRanges.items()})
-                                                                if 'Join/Leave Multiplier' in device_group_name:
-                                                                    groupRanges = {"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/igmpHost[1]'),
-                                                                                  "jlMultiplier": device_group_name['Join/Leave Multiplier']}
-                                                                    self.config.append({key: value for key, value in groupRanges.items()})
-                                                                if 'Version' in device_group_name:
-                                                                    self.config_multivalueObj(device_group_name['Version'], igmpHost['xpath'], 'versionType')
-                                                                if 'No Of Source Ranges' in device_group_name:
-                                                                    sourceRanges = {"xpath": (ethernetinfo['xpath'] + '/ipv4[1]' + '/igmpHost[1]/igmpMcastIPv4GroupList'),
-                                                                                  "noOfSrcRanges": device_group_name['No Of Source Ranges']}
-                                                                    self.config.append({key: value for key, value in sourceRanges.items()})
-                                                                for igmpHostKey in device_group_name:
-                                                                    try:
-                                                                        self.config_multivalueObj(device_group_name[igmpHostKey],
-                                                                                                  igmpHost['xpath']+'/igmpMcastIPv4GroupList', igmpHostGroupAttributes[igmpHostKey])
-                                                                    except:
-                                                                        pass
+                                                        self._igmp_mld_config(devicegroupinfo, ethernetinfo,
+                                                                              device_group_name, 'ipv4',igmpHost,
+                                                                              hostGroupAttributes,
+                                                                              hostSourceAttributes,'igmpHost',
+                                                                              'igmpMcastIPv4GroupList',
+                                                                              'igmpUcastIPv4SourceList')
+                                        if 'MLD_Host' in status_dict:
+                                            if status_dict['MLD_Host'] == True:
+                                                igmpHost = dict()
+                                                if 'MLD_Host' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['MLD_Host']:
+                                                        self._igmp_mld_config(devicegroupinfo, ethernetinfo,
+                                                                              device_group_name, 'ipv6',igmpHost,
+                                                                              hostGroupAttributes,
+                                                                              hostSourceAttributes,'mldHost',
+                                                                              'mldMcastIPv6GroupList',
+                                                                              'mldUcastIPv6SourceList')
 
-                                                                for igmpHostKey in device_group_name:
-                                                                    try:
-                                                                        self.config_multivalueObj(device_group_name[igmpHostKey],
-                                                                                                  igmpHost['xpath']+'/igmpMcastIPv4GroupList/igmpUcastIPv4SourceList', igmpHostSourceAttributes[igmpHostKey])
-                                                                    except:
-                                                                        pass
-
+                                        querierAttributes = {'Version': 'versionType',
+                                                                 'Query Count': 'startupQueryCount',
+                                                                 'Query Interval': 'generalQueryInterval',
+                                                                 'Router Alert': 'routerAlert',
+                                                                 'Robustness': 'robustnessVariable', \
+                                                                 'Query Response Interval': 'generalQueryResponseInterval',
+                                                                 'Transmission Count': 'specificQueryTransmissionCount'}
                                         if 'IGMP_Querier' in status_dict:
                                             if status_dict['IGMP_Querier'] == True:
                                                 igmpQuerier = dict()
-                                                igmpQuerierAttributes = {'Version':'versionType', 'Query Count':'startupQueryCount', 'Query Interval':'generalQueryInterval', 'Router Alert':'routerAlert', 'Robustness':'robustnessVariable',\
-                                                                         'Query Response Interval':'generalQueryResponseInterval','Transmission Count':'specificQueryTransmissionCount'}
                                                 if 'IGMP_Querier' in Worksheet_Dict:
                                                     for device_group_name in Worksheet_Dict['IGMP_Querier']:
                                                         # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
@@ -518,8 +549,60 @@ class BulkConfig():
                                                                 device_group_name.pop('Device Group')
                                                                 for igmpQuerierKey in device_group_name:
                                                                     self.config_multivalueObj(device_group_name[igmpQuerierKey],
-                                                                                              igmpQuerier['xpath'], igmpQuerierAttributes[igmpQuerierKey])
+                                                                                              igmpQuerier['xpath'], querierAttributes[igmpQuerierKey])
+                                        if 'MLD_Querier' in status_dict:
+                                            if status_dict['MLD_Querier'] == True:
+                                                mldQuerier = dict()
+                                                if 'MLD_Querier' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['MLD_Querier']:
+                                                        # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                        if 'Device Group' in device_group_name:
+                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                                mldQuerier.update({"xpath": (ethernetinfo['xpath'] + '/ipv6[1]' + '/mldQuerier[1]')})
+                                                                self.config.append({key: value for key, value in mldQuerier.items()})
+                                                                device_group_name.pop('Device Group')
+                                                                for mldQuerierKey in device_group_name:
+                                                                    self.config_multivalueObj(device_group_name[mldQuerierKey],
+                                                                                              mldQuerier['xpath'], querierAttributes[mldQuerierKey])
 
+                                        if 'LDP' in status_dict:
+                                            if status_dict['LDP'] == True:
+                                                ldp = dict()
+                                                ldpAttributes = {'Router ID':'routerId', 'Basic Hello Interval':'basicHelloInterval', 'Basic Hold Time':'basicHoldTime', 'Authentication':'authentication', 'MD5 Key':'mD5Key', 'Enable BFD Registration':'enableBfdRegistration',\
+                                                                         'Enable Graceful Restart':'enableGracefulRestart','Recovery Time':'recoveryTime', 'Reconnect Time':'reconnectTime', 'Keep Alive Interval':'keepAliveInterval','Keep Alive Hold Time':'keepAliveHoldTime'}
+                                                if 'LDP' in Worksheet_Dict:
+                                                    for device_group_name in Worksheet_Dict['LDP']:
+                                                        # devicegroupinfo['name'] = devicegroupinfo['name'].replace(" ", "")
+                                                        if 'Device Group' in device_group_name:
+                                                            if device_group_name['Device Group'] == devicegroupinfo['name']:
+                                                                if 'IP Version' in device_group_name:
+                                                                    if ';' in device_group_name['IP Version']:
+                                                                        ipVersionlist = device_group_name['IP Version'].split(';')
+                                                                    else:
+                                                                        ipVersionlist = [device_group_name['IP Version']]
+                                                                    for ipVersion in ipVersionlist:
+                                                                        if ipVersion == "ipv4":
+                                                                            ipversion = "ipv4"
+                                                                        else:
+                                                                            ipversion = "ipv6"
+                                                                        ldp.update({"xpath": (ethernetinfo['xpath'] + '/'+ipversion+'[1]' + '/ldpConnectedInterface[1]')})
+                                                                        self.config.append({key: value for key, value in ldp.items()})
+                                                                        ldpBasicRouter = {"xpath": (devicegroupinfo['xpath'] + '/ldpBasicRouter[1]')}
+                                                                        self.config.append({key: value for key, value in ldpBasicRouter.items()})
+                                                                        ldpRouterData = {"xpath": (devicegroupinfo['xpath'] + '/routerData[1]')}
+                                                                        self.config.append({key: value for key, value in ldpRouterData.items()})
+                                                                        ldpHeaderList = copy.deepcopy(device_group_name)
+                                                                        ldpHeaderList.pop('IP Version')
+                                                                        ldpHeaderList.pop('Device Group')
+                                                                        for ldpKey in ldpHeaderList:
+                                                                            if ldpKey == 'Router ID':
+                                                                                self.config_multivalueObj(device_group_name[ldpKey],
+                                                                                                          ldpRouterData['xpath'],ldpAttributes[ldpKey])
+                                                                            elif ldpKey == 'Enable Graceful Restart' or ldpKey == 'Recovery Time' or ldpKey == 'Reconnect Time' or ldpKey == 'Keep Alive Interval' or ldpKey =='Keep Alive Hold Time':
+                                                                                self.config_multivalueObj(device_group_name[ldpKey],
+                                                                                                          ldpBasicRouter['xpath'],ldpAttributes[ldpKey])
+                                                                            else:
+                                                                                self.config_multivalueObj(device_group_name[ldpKey],ldp['xpath'], ldpAttributes[ldpKey])
                                         if 'Network_Group' in status_dict:
                                             if status_dict['Network_Group'] == True:
                                                 networkGroup = dict()
