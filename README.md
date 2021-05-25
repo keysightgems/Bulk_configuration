@@ -30,7 +30,7 @@ To generate excel sheet with custom parameters
 
 Implemented custom parameters: 
 
-	build_information, base, physical, devicegroup, ipv4_ethernet, ipv6_ethernet, ipv4_bgp, ipv6_bgp, ipv4_loopback, bgp_capabilities, ipv4_ospf, ipv6_ospf, isis, networkgroup, igmp_host, igmp_querier, traffic, packet_editor.
+	build_information, base, physical, devicegroup, ipv4_ethernet, ipv6_ethernet, ipv4_bgp, ipv6_bgp, ipv4_loopback, bgp_capabilities, ipv4_ospf, ipv6_ospf, isis, dhcp_ipv4, ldp, dhcp_ipv6, dhcp_serverv4, dhcp_serverv6, networkgroup, igmp_host, igmp_querier, mld_host, mld_querier, traffic, packet_editor.
 
 excel=API_Sheet()
 
